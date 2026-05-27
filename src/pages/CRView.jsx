@@ -64,20 +64,49 @@ const CRView = () => {
 
         let nextStatus = cr.status;
 
-        if (action === 'Approve') {
-            if (cr.status === 'Submitted' && user.role === 'Change Reviewer')
-                nextStatus = 'Under Review';
-            else if (cr.status === 'Under Review' && user.role === 'InfoSec')
-                nextStatus = 'Security Review';
-            else if (cr.status === 'Security Review' && user.role === 'Change Approver')
-                nextStatus = 'Approved';
-            else if (user.role === 'Admin')
-                nextStatus = 'Approved';
-        }
+   if (action === 'Approve') {
 
+    // Reviewer → DC / InfoSec
+    if (
+        cr.status === 'Submitted' &&
+        user.role === 'Change Reviewer'
+    ) {
+
+        nextStatus = 'DC / InfoSec Review';
+
+    }
+
+    // InfoSec → Approver
+    else if (
+        cr.status === 'DC / InfoSec Review' &&
+        user.role === 'InfoSec'
+    ) {
+
+        nextStatus = 'Pending Approval';
+
+    }
+
+    // Final Approval
+    else if (
+        cr.status === 'Pending Approval' &&
+        user.role === 'Change Approver'
+    ) {
+
+        nextStatus = 'Approved';
+
+    }
+
+    // Admin Override
+    else if (user.role === 'Admin') {
+
+        nextStatus = 'Approved';
+
+    }
+
+}
         else if (action === 'Reject') {
-            nextStatus = 'Closed';
-        }
+    nextStatus = 'Rejected';
+}
 
         else if (action === 'Send Back') {
             nextStatus = 'Submitted';
@@ -121,6 +150,11 @@ const CRView = () => {
             await api.post(`/implement/${id}`, data, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+            await api.post(`/cr/${id}/workflow`, {
+    action: 'Implemented',
+    comments: 'Implementation completed successfully',
+    next_status: 'Completed'
+});
 
             window.location.reload();
 
@@ -140,13 +174,24 @@ const CRView = () => {
     if (!cr)
         return <div className="p-8 text-red-500 font-bold">CR Not Found</div>;
 
+const canReview =
 
-    const canReview =
-        (cr.status === 'Submitted' && user?.role === 'Change Reviewer') ||
-        (cr.status === 'Under Review' && user?.role === 'InfoSec') ||
-        (cr.status === 'Security Review' && user?.role === 'Change Approver') ||
-        user?.role === 'Admin';
+    (
+        cr.status === 'Submitted' &&
+        user?.role === 'Change Reviewer'
+    ) ||
 
+    (
+        cr.status === 'DC / InfoSec Review' &&
+        user?.role === 'InfoSec'
+    ) ||
+
+    (
+        cr.status === 'Pending Approval' &&
+        user?.role === 'Change Approver'
+    ) ||
+
+    user?.role === 'Admin';
     const canImplement =
         cr.status === 'Approved' &&
         (user?.role === 'Implementation Team' || user?.role === 'Admin');
