@@ -31,9 +31,8 @@ const CRSubmit = () => {
 
     // Files
     const [files, setFiles] = useState({
-        implementation_plan: null,
-        rollback_plan: null
-    });
+    supporting_documents: []
+});
 
     // Handle Input Change
     const handleChange = (e) => {
@@ -45,11 +44,13 @@ const CRSubmit = () => {
 
     // Handle File Change
     const handleFileChange = (e) => {
-        setFiles({
-            ...files,
-            [e.target.name]: e.target.files[0]
-        });
-    };
+
+    setFiles({
+        ...files,
+        [e.target.name]: e.target.files
+    });
+
+};
 
     // Submit Form
     const handleSubmit = async (e) => {
@@ -70,19 +71,13 @@ const CRSubmit = () => {
         });
 
         // Files
-        if (files.implementation_plan) {
-            data.append(
-                'implementation_plan',
-                files.implementation_plan
-            );
-        }
+        if (files.supporting_documents.length > 0) {
 
-        if (files.rollback_plan) {
-            data.append(
-                'rollback_plan',
-                files.rollback_plan
-            );
-        }
+    Array.from(files.supporting_documents).forEach((file) => {
+        data.append('supporting_documents', file);
+    });
+
+}
 
         try {
 
@@ -262,7 +257,7 @@ const CRSubmit = () => {
                             </option>
                         </select>
                     </div>
-
+</div>
                     {/* Description */}
                     <div className="md:col-span-2">
 
@@ -357,38 +352,21 @@ const CRSubmit = () => {
                     </div>
 
                     {/* Implementation Plan */}
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="md:col-span-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
 
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Implementation Plan
-                        </label>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+        Supporting Documents
+    </label>
 
-                        <input
-                            type="file"
-                            name="implementation_plan"
-                            onChange={handleFileChange}
-                            className="w-full text-sm text-gray-500"
-                        />
+    <input
+        type="file"
+        name="supporting_documents"
+        multiple
+        onChange={handleFileChange}
+        className="w-full text-sm text-gray-500"
+    />
 
-                    </div>
-
-                    {/* Rollback Plan */}
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Rollback Plan
-                        </label>
-
-                        <input
-                            type="file"
-                            name="rollback_plan"
-                            onChange={handleFileChange}
-                            className="w-full text-sm text-gray-500"
-                        />
-
-                    </div>
-
-                </div>
+</div>
 
                 {/* Buttons */}
                 <div className="pt-6 border-t border-gray-200 flex justify-end gap-4">
